@@ -7,6 +7,7 @@ const {
   getPlant,
   searchPlants,
   getComments,
+  getAverageRating,
 } = require("../controllers/plantController.js");
 
 const { verifyToken } = require("../jwtMiddleware.js");
@@ -35,6 +36,6 @@ router.get("/:plantId", getPlant);
 router.get("/:plantId/comments", verifyToken, getComments);
 
 // 🔹 Rute untuk mendapatkan rata-rata rating tanaman berdasarkan plantId
-router.get('/plant/averageRating/:plantId', plantController.getAverageRating);
+router.get("/plant/averageRating/:plantId", getAverageRating);
 
 module.exports = router;
