@@ -35570,12 +35570,12 @@
     "5777": {
       "events": {},
       "links": {},
-      "address": "0xBB3683F91f782Db051B56cf7124d9377d707a99C",
-      "transactionHash": "0xebfc2285f99fced12c0408fe42eafcdccaa7c864f7f39ffbb1a09be8c2598f63"
+      "address": "0xe5c4C5F78051d9203b92E84F145F9F91d9d90567",
+      "transactionHash": "0x35330c46cc3452011346588f67e85250ca1f10a8c256591fcac011e3471f7d87"
     }
   },
   "schemaVersion": "3.4.16",
-  "updatedAt": "2025-04-07T08:19:09.600Z",
+  "updatedAt": "2025-04-08T02:38:21.291Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",
