@@ -7,6 +7,7 @@ dotenv.config();
 
 async function registerUser(fullName, password) {
   try {
+    console.time("Registration Time");
     const { contract, wallet } = await initialize();
 
     // Hash password dengan bcrypt sebelum dikirim ke blockchain
@@ -17,6 +18,7 @@ async function registerUser(fullName, password) {
       .registerUser(fullName, passwordHash)
       .send({ from: wallet.address, gas: 3000000 });
 
+    console.timeEnd("Registration Time");
     console.log(
       `✅ Pendaftaran berhasil dengan TX Hash: ${tx.transactionHash}`
     );
@@ -29,6 +31,7 @@ async function registerUser(fullName, password) {
 
 async function loginUser(password) {
   try {
+    console.time("Login Time");
     const { contract, wallet } = await initialize();
 
     // Ambil informasi user dari smart contract
@@ -51,6 +54,8 @@ async function loginUser(password) {
       { expiresIn: "3h" }
     );
 
+    console.timeEnd("Login Time");
+
     console.log(`✅ Login berhasil! JWT Token: ${token}`);
     return { token, txHash: tx.transactionHash };
   } catch (error) {
@@ -61,6 +66,7 @@ async function loginUser(password) {
 
 async function logoutUser(token) {
   try {
+    console.time("Logout Time");
     if (!token) throw new Error("Token diperlukan untuk logout!");
 
     // Verifikasi token untuk mendapatkan publicKey
@@ -74,6 +80,7 @@ async function logoutUser(token) {
       .logout()
       .send({ from: publicKey, gas: 3000000 });
 
+    console.timeEnd("Logout Time");
     console.log(`✅ Logout berhasil untuk: ${publicKey}`);
     return tx.transactionHash;
   } catch (error) {

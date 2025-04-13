@@ -4,6 +4,11 @@ const { isUserLoggedIn } = require("./authController.js");
 async function addPlantData(req, res) {
   try {
     const userAddress = req.user.publicKey;
+
+    console.log("Starting plant addition for user:", userAddress);
+
+    console.time("Add Plant Time");
+
     const { name, namaLatin, komposisi, kegunaan, caraPengolahan, ipfsHash } =
       req.body;
 
@@ -37,6 +42,9 @@ async function addPlantData(req, res) {
       txHash: tx.transactionHash,
       plantId: plantIdString, // Return the plantId as string
     });
+
+    console.timeEnd("Add Plant Time");
+    console.log(`✅ Plant added with transaction hash: ${tx.transactionHash}`);
   } catch (error) {
     console.error("❌ Error in addPlantData:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -46,6 +54,7 @@ async function addPlantData(req, res) {
 // Fungsi untuk mengambil data tanaman herbal
 async function getPlant(req, res) {
   try {
+    console.time("Get Plant Time");
     const { plantId } = req.params;
 
     const { contract } = await initialize();
@@ -75,6 +84,11 @@ async function getPlant(req, res) {
         plantId: plantIdString, // Mengembalikan plantId sebagai string
       },
     });
+    console.timeEnd("Get Plant Time");
+    console.log(
+      `✅ Berhasil mendapatkan tanaman dengan TX Hash: ${tx.transactionHash}`
+    );
+    return tx.transactionHash;
   } catch (error) {
     console.error("❌ Error in getPlant:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -83,6 +97,7 @@ async function getPlant(req, res) {
 
 async function ratePlant(req, res) {
   try {
+    console.time("Rate Plant Time");
     const userAddress = req.user.publicKey;
     const { plantId, rating } = req.body;
 
@@ -106,6 +121,11 @@ async function ratePlant(req, res) {
       txHash: tx.transactionHash,
       plantId: plantId.toString(), // Mengonversi BigInt ke string
     });
+    console.timeEnd("Rate Plant Time");
+    console.log(
+      `✅ Berhasil menambahkan rating pada tanaman dengan TX Hash: ${tx.transactionHash}`
+    );
+    return tx.transactionHash;
   } catch (error) {
     console.error("❌ Error in ratePlant:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -115,6 +135,7 @@ async function ratePlant(req, res) {
 // Function untuk mendapatkan rata-rata rating dari sebuah tanaman herbal
 async function getAverageRating(req, res) {
   try {
+    console.time("Get Average Rating Time");
     const { plantId } = req.params;
     const { contract } = await initialize();
 
@@ -132,6 +153,11 @@ async function getAverageRating(req, res) {
       success: true,
       averageRating: averageRating.toString(), // Mengonversi rata-rata rating menjadi string
     });
+    console.timeEnd("Get Average Rating Time");
+    console.log(
+      `✅ Berhasil mendapatkan average rating tanaman dengan TX Hash: ${tx.transactionHash}`
+    );
+    return tx.transactionHash;
   } catch (error) {
     console.error("❌ Error in getAverageRating:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -141,6 +167,7 @@ async function getAverageRating(req, res) {
 // Fungsi untuk mendapatkan ratings tanaman berdasarkan plantId
 async function getPlantRatings(req, res) {
   try {
+    console.time("Get Plant Rating Time");
     const { plantId } = req.params;
     const { contract } = await initialize();
 
@@ -154,6 +181,11 @@ async function getPlantRatings(req, res) {
       success: true,
       ratings: ratingsArray, // Mengembalikan ratings dalam bentuk array
     });
+    console.time("Get Plant Rating Time");
+    console.log(
+      `✅ Berhasil mendapatkan total rating tanaman dengan TX Hash: ${tx.transactionHash}`
+    );
+    return tx.transactionHash;
   } catch (error) {
     console.error("❌ Error in getPlantRatings:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -162,6 +194,7 @@ async function getPlantRatings(req, res) {
 
 async function likePlant(req, res) {
   try {
+    console.time("Like Plant Time");
     const userAddress = req.user.publicKey;
     const { plantId } = req.body;
 
@@ -187,6 +220,11 @@ async function likePlant(req, res) {
       txHash: tx.transactionHash,
       plantId: plantId.toString(), // Mengonversi BigInt ke string
     });
+    console.timeEnd("Like Plant Time");
+    console.log(
+      `✅ Berhasil memberikan like dengan TX Hash: ${tx.transactionHash}`
+    );
+    return tx.transactionHash;
   } catch (error) {
     console.error("❌ Error in likePlant:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -196,6 +234,7 @@ async function likePlant(req, res) {
 // Function untuk memberikan komentar pada sebuah data tanaman herbal
 async function commentPlant(req, res) {
   try {
+    console.time("Comment Plant Time");
     const userAddress = req.user.publicKey;
     const { plantId, comment } = req.body;
 
@@ -219,6 +258,11 @@ async function commentPlant(req, res) {
       txHash: tx.transactionHash,
       plantId: plantId.toString(), // Mengonversi BigInt ke string
     });
+    console.timeEnd("Comment Plant Time");
+    console.log(
+      `✅ Berhasil memberikan komentar dengan TX Hash: ${tx.transactionHash}`
+    );
+    return tx.transactionHash;
   } catch (error) {
     console.error("❌ Error in commentPlant:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -228,6 +272,7 @@ async function commentPlant(req, res) {
 // Fungsi untuk mencari tanaman berdasarkan nama, nama latin, komposisi, atau kegunaan
 async function searchPlants(req, res) {
   try {
+    console.time("Search Plant Time");
     const { name, namaLatin, komposisi, kegunaan } = req.query;
 
     // Validasi parameter
@@ -271,6 +316,12 @@ async function searchPlants(req, res) {
     }));
 
     res.json({ success: true, plants: formattedPlants });
+
+    console.timeEnd("Search Plant Time");
+    console.log(
+      `✅ Berhasil mencari tanaman dengan TX Hash: ${tx.transactionHash}`
+    );
+    return tx.transactionHash;
   } catch (error) {
     console.error("❌ Error in searchPlants:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -280,6 +331,7 @@ async function searchPlants(req, res) {
 // Function untuk mendapatkan komentar dari sebuah data tanaman herbal
 async function getComments(req, res) {
   try {
+    console.time("Get Comment Time");
     const { plantId } = req.params;
     const { contract } = await initialize();
 
@@ -299,6 +351,11 @@ async function getComments(req, res) {
       success: true,
       comments: commentsWithStringValues, // Mengembalikan komentar yang telah dikonversi
     });
+    console.timeEnd("Get Comment Time");
+    console.log(
+      `✅ Berhasil mendapatkan tanaman dengan TX Hash: ${tx.transactionHash}`
+    );
+    return tx.transactionHash;
   } catch (error) {
     console.error("❌ Error in getComments:", error);
     res.status(500).json({ success: false, message: error.message });
