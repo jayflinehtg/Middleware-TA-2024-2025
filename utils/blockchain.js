@@ -50,10 +50,8 @@ async function initialize(publicKey = null) {
   // Jika publicKey diberikan (misalnya dari JWT), gunakan untuk inisialisasi wallet
   if (publicKey) {
     wallet = web3.eth.accounts.privateKeyToAccount(publicKey);
-    console.log("Wallet Address (from JWT):", wallet.address);
   } else {
     wallet = web3.eth.accounts.privateKeyToAccount(process.env.PRIVATE_KEY);
-    console.log("Wallet Address (default):", wallet.address);
   }
 
   contract = new web3.eth.Contract(contractABI, contractAddress, {

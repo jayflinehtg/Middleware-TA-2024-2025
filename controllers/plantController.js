@@ -85,10 +85,6 @@ async function getPlant(req, res) {
       },
     });
     console.timeEnd("Get Plant Time");
-    console.log(
-      `✅ Berhasil mendapatkan tanaman dengan TX Hash: ${tx.transactionHash}`
-    );
-    return tx.transactionHash;
   } catch (error) {
     console.error("❌ Error in getPlant:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -154,10 +150,6 @@ async function getAverageRating(req, res) {
       averageRating: averageRating.toString(), // Mengonversi rata-rata rating menjadi string
     });
     console.timeEnd("Get Average Rating Time");
-    console.log(
-      `✅ Berhasil mendapatkan average rating tanaman dengan TX Hash: ${tx.transactionHash}`
-    );
-    return tx.transactionHash;
   } catch (error) {
     console.error("❌ Error in getAverageRating:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -172,7 +164,7 @@ async function getPlantRatings(req, res) {
     const { contract } = await initialize();
 
     // Mengambil data ratings dari smart contract berdasarkan plantId
-    const ratings = await contract.methods.getRatings(plantId).call();
+    const ratings = await contract.methods.getPlantRatings(plantId).call();
 
     // Mengonversi ratings menjadi array angka
     const ratingsArray = ratings.map((rating) => Number(rating));
@@ -182,10 +174,6 @@ async function getPlantRatings(req, res) {
       ratings: ratingsArray, // Mengembalikan ratings dalam bentuk array
     });
     console.time("Get Plant Rating Time");
-    console.log(
-      `✅ Berhasil mendapatkan total rating tanaman dengan TX Hash: ${tx.transactionHash}`
-    );
-    return tx.transactionHash;
   } catch (error) {
     console.error("❌ Error in getPlantRatings:", error);
     res.status(500).json({ success: false, message: error.message });
@@ -352,10 +340,6 @@ async function getComments(req, res) {
       comments: commentsWithStringValues, // Mengembalikan komentar yang telah dikonversi
     });
     console.timeEnd("Get Comment Time");
-    console.log(
-      `✅ Berhasil mendapatkan tanaman dengan TX Hash: ${tx.transactionHash}`
-    );
-    return tx.transactionHash;
   } catch (error) {
     console.error("❌ Error in getComments:", error);
     res.status(500).json({ success: false, message: error.message });

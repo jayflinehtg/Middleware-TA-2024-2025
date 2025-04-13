@@ -5,6 +5,7 @@ const {
   likePlant,
   commentPlant,
   getPlant,
+  getPlantRatings,
   searchPlants,
   getComments,
   getAverageRating,
@@ -31,6 +32,9 @@ router.post("/comment", verifyToken, commentPlant);
 
 // 🔹 Rute untuk mengambil data tanaman berdasarkan ID
 router.get("/:plantId", getPlant);
+
+// 🔹 Rute untuk mendapatkan rating tanaman
+router.get("/:plantId/ratings", getPlantRatings);
 
 // 🔹 Rute untuk mengambil komentar tanaman (butuh autentikasi)
 router.get("/:plantId/comments", verifyToken, getComments);
