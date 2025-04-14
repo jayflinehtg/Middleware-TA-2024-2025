@@ -4,6 +4,7 @@ const {
   loginUser,
   logoutUser,
   isUserLoggedIn,
+  getUserData,
 } = require("../controllers/authController.js");
 const { verifyToken } = require("../jwtMiddleware.js");
 
@@ -26,6 +27,17 @@ router.post("/login", async (req, res) => {
     const { password } = req.body;
     const result = await loginUser(password); // Fungsi loginUser sebagai callback
     res.status(200).json({ success: true, ...result });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Rute baru untuk mendapatkan data pengguna berdasarkan wallet address
+router.get("/user/:walletAddress", async (req, res) => {
+  try {
+    const { walletAddress } = req.params;
+    const userData = await getUserData(walletAddress);
+    res.status(200).json({ success: true, userData });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

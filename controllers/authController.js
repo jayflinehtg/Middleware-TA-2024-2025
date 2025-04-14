@@ -64,6 +64,23 @@ async function loginUser(password) {
   }
 }
 
+// Fungsi baru untuk mendapatkan data pengguna
+async function getUserData(walletAddress) {
+  try {
+    const { contract } = await initialize();
+    const userInfo = await contract.methods.getUserInfo(walletAddress).call();
+    return {
+      fullName: userInfo.fullName,
+      isRegistered: userInfo.isRegistered,
+      isLoggedIn: userInfo.isLoggedIn,
+      // Jangan kembalikan hashPass untuk keamanan
+    };
+  } catch (error) {
+    console.error("❌ Error dalam getUserData:", error);
+    throw new Error(`Gagal mengambil data pengguna: ${error.message}`);
+  }
+}
+
 async function logoutUser(token) {
   try {
     console.time("Logout Time");
@@ -96,4 +113,4 @@ async function isUserLoggedIn(publicKey) {
   return userInfo.isLoggedIn; // Kembalikan status login
 }
 
-module.exports = { registerUser, loginUser, logoutUser, isUserLoggedIn };
+module.exports = { registerUser, loginUser, logoutUser, isUserLoggedIn, getUserData };
