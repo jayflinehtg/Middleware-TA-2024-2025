@@ -27,10 +27,10 @@ async function connectToGanache() {
   web3 = new Web3(ganacheUrl); // Inisialisasi Web3 langsung dengan URL Ganache
 
   try {
-    const chainId = await web3.eth.getChainId(); // ✅ Web3 v4.x compatible
-    console.log(`✅ Connected to Ganache. Chain ID: ${chainId}`);
+    const chainId = await web3.eth.getChainId();
+    console.log(`Connected to Ganache. Chain ID: ${chainId}`);
   } catch (error) {
-    console.error("❌ Failed to connect to Ganache", error);
+    console.error("Failed to connect to Ganache", error);
     process.exit(1);
   }
 }
@@ -38,12 +38,12 @@ async function connectToGanache() {
 async function initialize(publicKey = null) {
   if (contract && wallet) return { contract, wallet }; // Return contract and wallet if initialized
 
-  console.log("🔄 Initializing blockchain...");
+  console.log("Initializing blockchain...");
 
   await connectToGanache();
 
   if (!contractAddress) {
-    console.error("❌ Contract address not found.");
+    console.error("Contract address not found.");
     process.exit(1);
   }
 
@@ -58,7 +58,7 @@ async function initialize(publicKey = null) {
     from: wallet.address,
   });
 
-  console.log("✅ Blockchain initialized successfully.");
+  console.log("Blockchain initialized successfully.");
   return { contract, wallet };
 }
 

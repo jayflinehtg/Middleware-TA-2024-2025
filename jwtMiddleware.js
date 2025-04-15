@@ -41,7 +41,7 @@ const verifyToken = async (req, res, next) => {
     // Melanjutkan ke middleware berikutnya jika token valid dan pengguna terautentikasi
     next();
   } catch (error) {
-    console.error("❌ Error decoding token:", error);
+    console.error("Error decoding token:", error);
     return res.status(401).json({
       success: false,
       message: "Token tidak valid atau sudah kedaluwarsa",

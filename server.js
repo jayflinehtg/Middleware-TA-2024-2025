@@ -19,17 +19,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // PENTING: Mount router utama dari index.js
 app.use("/api", routes); // Menambahkan prefix '/api'
 
-// Rute debug untuk memeriksa routing
-app.get("/debug", (req, res) => {
-  res.json({
-    message: "Server aktif",
-    routes: {
-      api: "/api/*", // Semua endpoint API dimulai dengan /api
-      ipfs: ["/upload", "/getFile/:cid"], // IPFS endpoints tanpa prefix
-    },
-  });
-});
-
 // Penanganan 404 untuk rute yang tidak terdaftar
 app.use((req, res) => {
   res.status(404).json({
