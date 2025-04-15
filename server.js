@@ -16,12 +16,6 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// =================== MAIN ROUTES ===================
-// Menambahkan middleware autentikasi untuk rute yang memerlukan login
-app.use("/api/plants/add", verifyToken);
-app.use("/api/plants/rate", verifyToken);
-app.use("/api/plants/like", verifyToken);
-
 // PENTING: Mount router utama dari index.js
 app.use("/api", routes); // Menambahkan prefix '/api'
 

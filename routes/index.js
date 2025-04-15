@@ -28,7 +28,6 @@ router.use((req, res, next) => {
 // Rute utama
 router.use("/auth", authRoutes);
 router.use("/plants", plantRoutes);
-router.use("/plants", verifyToken, plantRoutes); 
 router.use("/ipfs", ipfsRoutes);
 
 // Middleware untuk menangani rute yang tidak ditemukan
