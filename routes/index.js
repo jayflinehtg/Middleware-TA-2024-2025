@@ -27,8 +27,8 @@ router.use((req, res, next) => {
 
 // Rute utama
 router.use("/auth", authRoutes);
-router.use("/plants", plantRoutes); // Tidak ada verifikasi token untuk getPlant
-router.use("/plants", verifyToken, plantRoutes); // Pastikan hanya rute yang memerlukan verifikasi token yang dilindungi
+router.use("/plants", plantRoutes);
+router.use("/plants", verifyToken, plantRoutes); 
 router.use("/ipfs", ipfsRoutes);
 
 // Middleware untuk menangani rute yang tidak ditemukan

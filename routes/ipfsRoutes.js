@@ -25,7 +25,7 @@ async function addFileToIPFS(fileBuffer) {
     const form = new FormData();
     form.append("file", fileBuffer, "file");
 
-    const response = await fetch("http://127.0.0.1:5001/api/v0/add", {
+    const response = await fetch("http://192.168.50.94:5001/api/v0/add", {
       method: "POST",
       body: form,
       headers: form.getHeaders(),
@@ -92,7 +92,7 @@ async function getFileFromIPFS(cid) {
     const form = new FormData();
     form.append("arg", cid);
 
-    const response = await fetch("http://127.0.0.1:5001/api/v0/cat", {
+    const response = await fetch("http://192.168.50.94:5001/api/v0/cat", {
       method: "POST",
       body: form,
       headers: form.getHeaders(),
