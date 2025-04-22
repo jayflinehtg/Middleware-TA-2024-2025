@@ -8,6 +8,7 @@ const {
   getPlantRatings,
   searchPlants,
   getComments,
+  getAllPlants,
   getAverageRating,
 } = require("../controllers/plantController.js");
 
@@ -29,6 +30,9 @@ router.post("/like", verifyToken, likePlant);
 
 // 🔹 Rute untuk memberi komentar pada tanaman (butuh autentikasi)
 router.post("/comment", verifyToken, commentPlant);
+
+// 🔹 Rute untuk memberi menampilkan semua tanaman
+router.get("/all", getAllPlants);
 
 // 🔹 Rute untuk mengambil data tanaman berdasarkan ID
 router.get("/:plantId", getPlant);

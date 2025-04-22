@@ -257,6 +257,62 @@ async function commentPlant(req, res) {
   }
 }
 
+// Fungsi untuk mengambil semua data tanaman dari smart contract
+async function getAllPlants(req, res) {
+  try {
+    console.time("Get All Plants Time");
+    const { contract } = await initialize();
+    
+    // Konversi BigInt ke Number dengan aman
+    const totalPlantsBigInt = await contract.methods.plantCount().call();
+    const totalPlants = parseInt(totalPlantsBigInt.toString());
+
+    // Paginasi
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const startIndex = (page - 1) * limit;
+    const endIndex = Math.min(startIndex + limit, totalPlants);
+
+    // Ambil semua tanaman dengan filter paginasi
+    const plants = [];
+    for (let i = startIndex; i < endIndex; i++) {
+      const plant = await contract.methods.getPlant(i).call();
+      
+      plants.push({
+        plantId: i.toString(),
+        name: plant.name || "Tidak Diketahui",
+        namaLatin: plant.namaLatin || "Tidak Diketahui",
+        komposisi: plant.komposisi || "Tidak Diketahui",
+        kegunaan: plant.kegunaan || "Tidak Diketahui",
+        caraPengolahan: plant.caraPengolahan || "Tidak Diketahui",
+        ipfsHash: plant.ipfsHash || "Tidak Diketahui",
+        ratingTotal: (plant.ratingTotal || 0n).toString(),
+        ratingCount: (plant.ratingCount || 0n).toString(),
+        likeCount: (plant.likeCount || 0n).toString(),
+        owner: plant.owner || "Tidak Diketahui"
+      });
+    }
+
+    res.json({
+      success: true,
+      total: totalPlants,
+      currentPage: page,
+      pageSize: limit,
+      plants: plants
+    });
+
+    console.timeEnd("Get All Plants Time");
+  } catch (error) {
+    console.error("❌ Error in getAllPlants:", error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message.includes("BigInt") 
+        ? "Invalid data format from blockchain" 
+        : error.message 
+    });
+  }
+}
+
 // Fungsi untuk mencari tanaman berdasarkan nama, nama latin, komposisi, atau kegunaan
 async function searchPlants(req, res) {
   try {
@@ -356,4 +412,5 @@ module.exports = {
   getPlant,
   searchPlants,
   getComments,
+  getAllPlants,
 };
