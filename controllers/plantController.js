@@ -362,10 +362,7 @@ async function searchPlants(req, res) {
     res.json({ success: true, plants: formattedPlants });
 
     console.timeEnd("Search Plant Time");
-    console.log(
-      `✅ Berhasil mencari tanaman dengan TX Hash: ${tx.transactionHash}`
-    );
-    return tx.transactionHash;
+    console.log("✅ Berhasil mencari tanaman");
   } catch (error) {
     console.error("❌ Error in searchPlants:", error);
     res.status(500).json({ success: false, message: error.message });

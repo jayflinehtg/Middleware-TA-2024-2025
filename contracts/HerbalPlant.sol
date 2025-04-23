@@ -247,10 +247,10 @@ contract HerbalPlant {
     string memory namaLatin, 
     string memory komposisi, 
     string memory kegunaan
-) 
+    ) 
     public view
     returns (uint[] memory, Plant[] memory) // Return 2 array: IDs dan data tanaman
-{
+    {
     uint plantIndex = 0;
     uint[] memory idResults = new uint[](plantCount);
     Plant[] memory plantResults = new Plant[](plantCount);
@@ -258,13 +258,13 @@ contract HerbalPlant {
     // Loop melalui semua tanaman yang tersimpan
     for (uint i = 0; i < plantCount; i++) {
         Plant storage currentPlant = plants[i];
-        bool isMatch = true;
+        bool isMatch = false;
 
-        // Lakukan pencarian untuk setiap parameter yang diisi
-        if (bytes(name).length > 0 && !contains(currentPlant.name, name)) isMatch = false;
-        if (bytes(namaLatin).length > 0 && !contains(currentPlant.namaLatin, namaLatin)) isMatch = false;
-        if (bytes(komposisi).length > 0 && !contains(currentPlant.komposisi, komposisi)) isMatch = false;
-        if (bytes(kegunaan).length > 0 && !contains(currentPlant.kegunaan, kegunaan)) isMatch = false;
+        // Jika ada salah satu yang cocok, maka isMatch = true
+        if (bytes(name).length > 0 && contains(currentPlant.name, name)) isMatch = true;
+        if (bytes(namaLatin).length > 0 && contains(currentPlant.namaLatin, namaLatin)) isMatch = true;
+        if (bytes(komposisi).length > 0 && contains(currentPlant.komposisi, komposisi)) isMatch = true;
+        if (bytes(kegunaan).length > 0 && contains(currentPlant.kegunaan, kegunaan)) isMatch = true;
 
         // Jika memenuhi kriteria, tambahkan ke hasil
         if (isMatch) {
@@ -286,7 +286,7 @@ contract HerbalPlant {
 
     // Kembalikan sebagai tuple (2 array terpisah)
     return (finalIds, finalPlants);
-}
+    }
 
     // 🔹 Fungsi untuk mengecek apakah sebuah string mengandung substring tertentu (case-insensitive)
     function contains(string memory haystack, string memory needle) internal pure returns (bool) {
