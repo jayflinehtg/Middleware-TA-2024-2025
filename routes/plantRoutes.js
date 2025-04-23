@@ -20,7 +20,7 @@ const router = express.Router();
 router.post("/add", verifyToken, addPlantData);
 
 // 🔹 Rute untuk mencari tanaman berdasarkan parameter
-router.get("/search", searchPlants); // Menambahkan rute searchPlants
+router.get("/search", searchPlants);
 
 // 🔹 Rute untuk memberi rating pada tanaman (butuh autentikasi)
 router.post("/rate", verifyToken, ratePlant);

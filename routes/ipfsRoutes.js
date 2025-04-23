@@ -22,10 +22,11 @@ const upload = multer({
 // Fungsi untuk menambahkan file ke IPFS
 async function addFileToIPFS(fileBuffer) {
   try {
+    console.time("Upload to IPFS Time");
     const form = new FormData();
     form.append("file", fileBuffer, "file");
 
-    const response = await fetch("http://192.168.1.100:5001/api/v0/add", {
+    const response = await fetch("http://192.168.1.103:5001/api/v0/add", {
       method: "POST",
       body: form,
       headers: form.getHeaders(),
@@ -42,6 +43,7 @@ async function addFileToIPFS(fileBuffer) {
 
     const cid = result.Hash;
     console.log(`File berhasil ditambahkan ke IPFS dengan CID: ${cid}`);
+    console.timeEnd("Upload to IPFS Time");
     return cid;
   } catch (error) {
     console.error("Gagal menambahkan file ke IPFS:", error.message);
@@ -89,10 +91,11 @@ router.post(
 // Fungsi untuk mengambil file dari IPFS (dibiarkan seperti sebelumnya)
 async function getFileFromIPFS(cid) {
   try {
+    console.time("Get Image from IPFS Time");
     const form = new FormData();
     form.append("arg", cid);
 
-    const response = await fetch("http://192.168.1.100:5001/api/v0/cat", {
+    const response = await fetch("http://192.168.1.103:5001/api/v0/cat", {
       method: "POST",
       body: form,
       headers: form.getHeaders(),
@@ -103,6 +106,7 @@ async function getFileFromIPFS(cid) {
       throw new Error(`IPFS Error: ${error}`);
     }
 
+    console.timeEnd("Get Image from IPFS Time");
     return await response.buffer();
   } catch (error) {
     console.error("Gagal mengambil file:", error.message);
