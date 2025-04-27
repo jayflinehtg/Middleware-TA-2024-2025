@@ -14,6 +14,8 @@ const {
 
 const { verifyToken } = require("../jwtMiddleware.js");
 
+const optionalAuth = require("../optionalAuth.js");
+
 const router = express.Router();
 
 // 🔹 Rute untuk menambahkan tanaman (butuh autentikasi)
@@ -35,13 +37,13 @@ router.post("/comment", verifyToken, commentPlant);
 router.get("/all", getAllPlants);
 
 // 🔹 Rute untuk mengambil data tanaman berdasarkan ID
-router.get("/:plantId", getPlant);
+router.get("/:plantId", optionalAuth, getPlant);
 
 // 🔹 Rute untuk mendapatkan rating tanaman
 router.get("/:plantId/ratings", getPlantRatings);
 
 // 🔹 Rute untuk mengambil komentar tanaman (butuh autentikasi)
-router.get("/:plantId/comments", verifyToken, getComments);
+router.get("/:plantId/comments", getComments);
 
 // 🔹 Rute untuk mendapatkan rata-rata rating tanaman berdasarkan plantId
 router.get("/plant/averageRating/:plantId", getAverageRating);

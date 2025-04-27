@@ -1,5 +1,5 @@
 const { initialize } = require("../utils/blockchain.js");
-const { isUserLoggedIn } = require("./authController.js");
+const { isUserLoggedIn, getUserData } = require("./authController.js");
 
 async function addPlantData(req, res) {
   try {
@@ -57,10 +57,20 @@ async function getPlant(req, res) {
     console.time("Get Plant Time");
     const { plantId } = req.params;
 
+    // Ambil alamat publik user (kalau tersedia, bisa undefined untuk guest)
+    const userAddress = req.user?.publicKey;
+
     const { contract } = await initialize();
 
     // Mengambil data tanaman herbal dari smart contract
     const plant = await contract.methods.getPlant(plantId).call();
+
+    let isLikedByUser = false;
+    if (userAddress) {
+      isLikedByUser = await contract.methods
+        .isPlantLikedByUser(plantId, userAddress)
+        .call();
+    }
 
     // Mengonversi nilai yang mungkin BigInt ke string
     const plantIdString = plantId.toString(); // Jika plantId merupakan BigInt
@@ -82,6 +92,7 @@ async function getPlant(req, res) {
         likeCount: likeCountString, // Mengonversi BigInt menjadi string
         owner: plant.owner,
         plantId: plantIdString, // Mengembalikan plantId sebagai string
+        isLikedByUser,
       },
     });
     console.timeEnd("Get Plant Time");
@@ -262,7 +273,7 @@ async function getAllPlants(req, res) {
   try {
     console.time("Get All Plants Time");
     const { contract } = await initialize();
-    
+
     // Konversi BigInt ke Number dengan aman
     const totalPlantsBigInt = await contract.methods.plantCount().call();
     const totalPlants = parseInt(totalPlantsBigInt.toString());
@@ -277,7 +288,7 @@ async function getAllPlants(req, res) {
     const plants = [];
     for (let i = startIndex; i < endIndex; i++) {
       const plant = await contract.methods.getPlant(i).call();
-      
+
       plants.push({
         plantId: i.toString(),
         name: plant.name || "Tidak Diketahui",
@@ -289,7 +300,7 @@ async function getAllPlants(req, res) {
         ratingTotal: (plant.ratingTotal || 0n).toString(),
         ratingCount: (plant.ratingCount || 0n).toString(),
         likeCount: (plant.likeCount || 0n).toString(),
-        owner: plant.owner || "Tidak Diketahui"
+        owner: plant.owner || "Tidak Diketahui",
       });
     }
 
@@ -298,17 +309,17 @@ async function getAllPlants(req, res) {
       total: totalPlants,
       currentPage: page,
       pageSize: limit,
-      plants: plants
+      plants: plants,
     });
 
     console.timeEnd("Get All Plants Time");
   } catch (error) {
     console.error("❌ Error in getAllPlants:", error);
-    res.status(500).json({ 
-      success: false, 
-      message: error.message.includes("BigInt") 
-        ? "Invalid data format from blockchain" 
-        : error.message 
+    res.status(500).json({
+      success: false,
+      message: error.message.includes("BigInt")
+        ? "Invalid data format from blockchain"
+        : error.message,
     });
   }
 }
@@ -380,13 +391,27 @@ async function getComments(req, res) {
     const comments = await contract.methods.getPlantComments(plantId).call();
 
     // Mengonversi BigInt menjadi string untuk setiap nilai yang relevan dalam komentar
-    const commentsWithStringValues = comments.map((comment) => {
-      return {
-        user: comment.user, // Alamat pengguna (tidak perlu konversi)
-        comment: comment.comment, // Isi komentar (tidak perlu konversi)
-        timestamp: comment.timestamp.toString(), // Mengonversi timestamp ke string
-      };
-    });
+    const commentsWithStringValues = await Promise.all(
+      comments.map(async (comment) => {
+        try {
+          const userInfo = await getUserData(comment.user);
+          return {
+            publicKey: comment.user,
+            fullName: userInfo.fullName || "Unknown User",
+            comment: comment.comment,
+            timestamp: comment.timestamp.toString(),
+          };
+        } catch (error) {
+          // Kalau gagal ambil userInfo (misal user belum register), tetap jalan
+          return {
+            publicKey: comment.user,
+            fullName: "Unknown User",
+            comment: comment.comment,
+            timestamp: comment.timestamp.toString(),
+          };
+        }
+      })
+    );
 
     res.json({
       success: true,
