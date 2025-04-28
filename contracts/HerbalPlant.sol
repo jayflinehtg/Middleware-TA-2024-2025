@@ -191,6 +191,11 @@ contract HerbalPlant {
     }
     }
 
+    // 🔹 Mengecek apakah user sudah like tanaman tertentu
+    function isPlantLikedByUser(uint plantId, address user) public view returns (bool) {
+        return plantLikes[plantId][user];
+    }
+
     // 🔹 Memberikan komentar/testimoni pada tanaman
     function commentPlant(uint plantId, string memory comment) public onlyActiveUser {
         require(plants[plantId].owner != address(0), "Tanaman tidak ditemukan");
