@@ -184,7 +184,7 @@ async function getPlantRatings(req, res) {
       success: true,
       ratings: ratingsArray, // Mengembalikan ratings dalam bentuk array
     });
-    console.time("Get Plant Rating Time");
+    console.timeEnd("Get Plant Rating Time");
   } catch (error) {
     console.error("❌ Error in getPlantRatings:", error);
     res.status(500).json({ success: false, message: error.message });

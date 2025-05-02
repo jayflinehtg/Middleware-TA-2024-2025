@@ -13,8 +13,8 @@ const router = express.Router();
 // Rute untuk registrasi
 router.post("/register", async (req, res) => {
   try {
-    const { fullName, password } = req.body;
-    const result = await registerUser(fullName, password);
+    const { walletAddress, fullName, password } = req.body;
+    const result = await registerUser(walletAddress, fullName, password);
     res.status(200).json({ success: true, txHash: result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -24,8 +24,9 @@ router.post("/register", async (req, res) => {
 // Rute untuk login
 router.post("/login", async (req, res) => {
   try {
-    const { password } = req.body;
-    const result = await loginUser(password); // Fungsi loginUser sebagai callback
+    const { walletAddress, password } = req.body; // Menambahkan walletAddress ke body
+    console.log("Wallet Address:", walletAddress); // Log untuk debug
+    const result = await loginUser(walletAddress, password); // Fungsi loginUser sebagai callback
     res.status(200).json({ success: true, ...result });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

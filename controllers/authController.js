@@ -5,23 +5,32 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-async function registerUser(fullName, password) {
+async function registerUser(walletAddress, fullName, password) {
   try {
     console.time("Registration Time");
-    const { contract, wallet } = await initialize();
+    console.log("Wallet Address:", walletAddress);
+    console.log("Full Name:", fullName);
+    console.log("Password received:", password);  
+
+    if (!password || password.trim() === "") {
+        throw new Error("Password tidak boleh kosong");
+    }
+
+    const { contract, wallet } = await initialize(walletAddress);
 
     // Hash password dengan bcrypt sebelum dikirim ke blockchain
-    const passwordHash = await bcrypt.hash(password, 10);
+    const salt = await bcrypt.genSalt(10); // Menghasilkan salt dengan level 10
+    console.log("Generated Salt:", salt);
+    
+    const passwordHash = await bcrypt.hash(password, salt);  // Pastikan salt dan password diteruskan dengan benar
 
     // Mengirim data user ke smart contract
     const tx = await contract.methods
       .registerUser(fullName, passwordHash)
-      .send({ from: wallet.address, gas: 3000000 });
+      .send({ from: walletAddress, gas: 3000000 });
 
     console.timeEnd("Registration Time");
-    console.log(
-      `✅ Pendaftaran berhasil dengan TX Hash: ${tx.transactionHash}`
-    );
+    console.log(`✅ Pendaftaran berhasil dengan TX Hash: ${tx.transactionHash}`);
     return tx.transactionHash;
   } catch (error) {
     console.error("❌ Error dalam registerUser:", error);
@@ -29,38 +38,38 @@ async function registerUser(fullName, password) {
   }
 }
 
-async function loginUser(password) {
+async function loginUser(walletAddress, password) {
   try {
-    console.time("Login Time");
-    const { contract, wallet } = await initialize();
+      console.time("Login Time");
+      const { contract, wallet } = await initialize(walletAddress);
 
-    // Ambil informasi user dari smart contract
-    const userInfo = await contract.methods.getUserInfo(wallet.address).call();
-    const storedPasswordHash = userInfo.hashPass; // Hash password yang tersimpan di blockchain
+      // Ambil informasi user dari smart contract
+      const userInfo = await contract.methods.getUserInfo(walletAddress).call();
+      const storedPasswordHash = userInfo.hashPass; // Hash password yang tersimpan di blockchain
 
-    // Bandingkan password yang diinput dengan hash yang ada di blockchain
-    const isMatch = await bcrypt.compare(password, storedPasswordHash);
-    if (!isMatch) throw new Error("Password salah");
+      // Bandingkan password yang diinput dengan hash yang ada di blockchain
+      const isMatch = await bcrypt.compare(password, storedPasswordHash);
+      if (!isMatch) throw new Error("Password salah");
 
-    // Jika password cocok, user dianggap login dan dapat JWT Token
-    const tx = await contract.methods
-      .login()
-      .send({ from: wallet.address, gas: 3000000 });
+      // Jika password cocok, user dianggap login dan dapat JWT Token
+      const tx = await contract.methods
+        .login()
+        .send({ from: walletAddress, gas: 3000000 });
 
-    // Buat token JWT yang berlaku selama 2 jam
-    const token = jwt.sign(
-      { publicKey: wallet.address },
-      process.env.JWT_SECRET,
-      { expiresIn: "3h" }
-    );
+      // Buat token JWT yang berlaku selama 3 jam
+      const token = jwt.sign(
+        { publicKey: walletAddress },
+        process.env.JWT_SECRET,
+        { expiresIn: "3h" }
+      );
 
-    console.timeEnd("Login Time");
+      console.timeEnd("Login Time");
 
-    console.log(`✅ Login berhasil! JWT Token: ${token}`);
-    return { token, txHash: tx.transactionHash };
+      console.log(`✅ Login berhasil! JWT Token: ${token}`);
+      return { token, txHash: tx.transactionHash };
   } catch (error) {
-    console.error("❌ Error dalam loginUser:", error);
-    throw new Error(`Login gagal: ${error.message}`);
+      console.error("❌ Error dalam loginUser:", error);
+      throw new Error(`Login gagal: ${error.message}`);
   }
 }
 
