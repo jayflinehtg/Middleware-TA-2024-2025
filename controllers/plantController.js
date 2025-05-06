@@ -117,7 +117,19 @@ async function ratePlant(req, res) {
       });
     }
 
+    // Inisialisasi kontrak
     const { contract } = await initialize(userAddress);
+    // Cek apakah pengguna sudah memberikan rating sebelumnya
+    const previousRating = await contract.methods
+      .plantRatings(plantId, userAddress)
+      .call();
+
+    // Jika ada rating sebelumnya, beri tahu pengguna jika mereka ingin mengganti rating
+    if (previousRating != 0) {
+      console.log(`Pengguna sebelumnya memberi rating ${previousRating}`);
+    }
+
+    // Kirim transaksi untuk memberikan rating
     const tx = await contract.methods
       .ratePlant(plantId, rating)
       .send({ from: userAddress, gas: 5000000 });

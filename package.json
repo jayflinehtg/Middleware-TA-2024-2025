@@ -10,6 +10,7 @@
     "dev": "nodemon --legacy-watch server.js",
     "compile": "truffle compile --all",
     "migrate": "truffle migrate --network development",
+    "migrate-tea":"truffle migrate --network sepolia",
     "test": "jest",
     "test:watch": "jest --watch"
   },
@@ -19,6 +20,7 @@
   "type": "commonjs",
   "dependencies": {
     "@ethersproject/providers": "^5.8.0",
+    "@truffle/hdwallet-provider": "^2.1.15",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "cors": "^2.8.5",
