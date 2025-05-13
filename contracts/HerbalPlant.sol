@@ -5,9 +5,14 @@ contract HerbalPlant {
     struct Plant {
         string name;
         string namaLatin;
+        string bentukTanaman;
         string komposisi;
+        string wilayahPenyebaran;
+        string bagianYangDigunakan;
         string kegunaan;
+        string dosis;
         string caraPengolahan;
+        string efekSamping;
         string ipfsHash;
         uint ratingTotal;
         uint ratingCount;
@@ -110,9 +115,14 @@ contract HerbalPlant {
     function addPlant(
         string memory name,
         string memory namaLatin,
+        string memory bentukTanaman,
         string memory komposisi,
+        string memory wilayahPenyebaran,
+        string memory bagianYangDigunakan,
         string memory kegunaan,
+        string memory dosis,
         string memory caraPengolahan,
+        string memory efekSamping,
         string memory ipfsHash
     ) public onlyActiveUser {
         require(bytes(name).length > 0, "Nama tanaman diperlukan");
@@ -122,9 +132,14 @@ contract HerbalPlant {
         plants[currentId] = Plant({
             name: name,
             namaLatin: namaLatin,
+            bentukTanaman: bentukTanaman,
             komposisi: komposisi,
+            wilayahPenyebaran: wilayahPenyebaran,
+            bagianYangDigunakan: bagianYangDigunakan,
             kegunaan: kegunaan,
+            dosis: dosis,
             caraPengolahan: caraPengolahan,
+            efekSamping: efekSamping,
             ipfsHash: ipfsHash,
             ratingTotal: 0,
             ratingCount: 0,
@@ -225,9 +240,14 @@ contract HerbalPlant {
     returns (
         string memory name,
         string memory namaLatin,
+        string memory bentukTanaman,
         string memory komposisi,
+        string memory wilayahPenyebaran,
+        string memory bagianYangDigunakan,
         string memory kegunaan,
+        string memory dosis,
         string memory caraPengolahan,
+        string memory efekSamping,
         string memory ipfsHash,
         uint ratingTotal,
         uint ratingCount,
@@ -235,22 +255,27 @@ contract HerbalPlant {
         address owner
     )
     {
-    require(plants[plantId].owner != address(0), "Tanaman tidak ditemukan");
+        require(plants[plantId].owner != address(0), "Tanaman tidak ditemukan");
 
-    Plant storage plant = plants[plantId];
+        Plant storage plant = plants[plantId];
 
-    return (
-        plant.name,
-        plant.namaLatin,
-        plant.komposisi,
-        plant.kegunaan,
-        plant.caraPengolahan,
-        plant.ipfsHash,
-        plant.ratingTotal,
-        plant.ratingCount,
-        plant.likeCount,
-        plant.owner
-    );
+        return (
+            plant.name,
+            plant.namaLatin,
+            plant.bentukTanaman,
+            plant.komposisi,
+            plant.wilayahPenyebaran,
+            plant.bagianYangDigunakan,
+            plant.kegunaan,
+            plant.dosis,
+            plant.caraPengolahan,
+            plant.efekSamping,
+            plant.ipfsHash,
+            plant.ratingTotal,
+            plant.ratingCount,
+            plant.likeCount,
+            plant.owner
+        );
     }
 
     // 🔹 Fungsi untuk mencari tanaman berdasarkan nama, nama latin, komposisi, atau kegunaan

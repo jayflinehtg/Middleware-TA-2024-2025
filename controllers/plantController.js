@@ -9,8 +9,19 @@ async function addPlantData(req, res) {
 
     console.time("Add Plant Time");
 
-    const { name, namaLatin, komposisi, kegunaan, caraPengolahan, ipfsHash } =
-      req.body;
+    const {
+      name,
+      namaLatin,
+      bentukTanaman,           
+      komposisi,
+      wilayahPenyebaran,       
+      bagianYangDigunakan,     
+      kegunaan,
+      dosis,                   
+      caraPengolahan,
+      efekSamping,             
+      ipfsHash
+    } = req.body;
 
     // Pastikan pengguna sudah login
     const loggedIn = await isUserLoggedIn(userAddress);
@@ -25,7 +36,7 @@ async function addPlantData(req, res) {
 
     // Menambahkan tanaman dan mendapatkan txHash serta ID tanaman yang baru
     const tx = await contract.methods
-      .addPlant(name, namaLatin, komposisi, kegunaan, caraPengolahan, ipfsHash)
+      .addPlant(name, namaLatin, bentukTanaman, komposisi, wilayahPenyebaran, bagianYangDigunakan, kegunaan, dosis, caraPengolahan, efekSamping, ipfsHash)
       .send({ from: userAddress, gas: 5000000 });
 
     console.log(tx.events); // Log the events to check the emitted event
@@ -83,15 +94,20 @@ async function getPlant(req, res) {
       plant: {
         name: plant.name,
         namaLatin: plant.namaLatin,
+        bentukTanaman: plant.bentukTanaman,     
         komposisi: plant.komposisi,
+        wilayahPenyebaran: plant.wilayahPenyebaran, 
+        bagianYangDigunakan: plant.bagianYangDigunakan, 
         kegunaan: plant.kegunaan,
+        dosis: plant.dosis,                      
         caraPengolahan: plant.caraPengolahan,
+        efekSamping: plant.efekSamping,          
         ipfsHash: plant.ipfsHash,
-        ratingTotal: ratingTotalString, // Mengonversi BigInt menjadi string
-        ratingCount: ratingCountString, // Mengonversi BigInt menjadi string
-        likeCount: likeCountString, // Mengonversi BigInt menjadi string
+        ratingTotal: ratingTotalString,          // Mengonversi BigInt menjadi string
+        ratingCount: ratingCountString,          // Mengonversi BigInt menjadi string
+        likeCount: likeCountString,              // Mengonversi BigInt menjadi string
         owner: plant.owner,
-        plantId: plantIdString, // Mengembalikan plantId sebagai string
+        plantId: plantIdString,                 // Mengembalikan plantId sebagai string
         isLikedByUser,
       },
     });
@@ -101,6 +117,7 @@ async function getPlant(req, res) {
     res.status(500).json({ success: false, message: error.message });
   }
 }
+
 
 async function ratePlant(req, res) {
   try {
@@ -372,9 +389,14 @@ async function searchPlants(req, res) {
       plantId: plantIds[index]?.toString() || "N/A",
       name: plant.name || "Tidak Diketahui",
       namaLatin: plant.namaLatin || "Tidak Diketahui",
+      bentukTanaman: plant.bentukTanaman || "Tidak Diketahui",
       komposisi: plant.komposisi || "Tidak Diketahui",
+      wilayahPenyebaran: plant.wilayahPenyebaran || "Tidak Diketahui",
+      bagianYangDigunakan: plant.bagianYangDigunakan || "Tidak Diketahui",
       kegunaan: plant.kegunaan || "Tidak Diketahui",
+      dosis: plant.dosis || "Tidak Diketahui",
       caraPengolahan: plant.caraPengolahan || "Tidak Diketahui",
+      efekSamping: plant.efekSamping || "Tidak Diketahui",
       ipfsHash: plant.ipfsHash || "Tidak Diketahui",
       ratingTotal: (plant.ratingTotal || 0n)?.toString() || "0",
       ratingCount: (plant.ratingCount || 0n)?.toString() || "0",
