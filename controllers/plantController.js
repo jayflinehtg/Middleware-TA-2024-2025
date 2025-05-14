@@ -12,15 +12,12 @@ async function addPlantData(req, res) {
     const {
       name,
       namaLatin,
-      bentukTanaman,           
       komposisi,
-      wilayahPenyebaran,       
-      bagianYangDigunakan,     
       kegunaan,
-      dosis,                   
+      dosis,
       caraPengolahan,
-      efekSamping,             
-      ipfsHash
+      efekSamping,
+      ipfsHash,
     } = req.body;
 
     // Pastikan pengguna sudah login
@@ -36,7 +33,7 @@ async function addPlantData(req, res) {
 
     // Menambahkan tanaman dan mendapatkan txHash serta ID tanaman yang baru
     const tx = await contract.methods
-      .addPlant(name, namaLatin, bentukTanaman, komposisi, wilayahPenyebaran, bagianYangDigunakan, kegunaan, dosis, caraPengolahan, efekSamping, ipfsHash)
+      .addPlant(name, namaLatin, komposisi, kegunaan, dosis, caraPengolahan, efekSamping, ipfsHash)
       .send({ from: userAddress, gas: 5000000 });
 
     console.log(tx.events); // Log the events to check the emitted event
@@ -94,20 +91,17 @@ async function getPlant(req, res) {
       plant: {
         name: plant.name,
         namaLatin: plant.namaLatin,
-        bentukTanaman: plant.bentukTanaman,     
         komposisi: plant.komposisi,
-        wilayahPenyebaran: plant.wilayahPenyebaran, 
-        bagianYangDigunakan: plant.bagianYangDigunakan, 
         kegunaan: plant.kegunaan,
-        dosis: plant.dosis,                      
+        dosis: plant.dosis,
         caraPengolahan: plant.caraPengolahan,
-        efekSamping: plant.efekSamping,          
+        efekSamping: plant.efekSamping,
         ipfsHash: plant.ipfsHash,
-        ratingTotal: ratingTotalString,          // Mengonversi BigInt menjadi string
-        ratingCount: ratingCountString,          // Mengonversi BigInt menjadi string
-        likeCount: likeCountString,              // Mengonversi BigInt menjadi string
+        ratingTotal: ratingTotalString, // Mengonversi BigInt menjadi string
+        ratingCount: ratingCountString, // Mengonversi BigInt menjadi string
+        likeCount: likeCountString, // Mengonversi BigInt menjadi string
         owner: plant.owner,
-        plantId: plantIdString,                 // Mengembalikan plantId sebagai string
+        plantId: plantIdString, // Mengembalikan plantId sebagai string
         isLikedByUser,
       },
     });
