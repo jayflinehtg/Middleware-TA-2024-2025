@@ -318,7 +318,9 @@ async function getAllPlants(req, res) {
         namaLatin: plant.namaLatin || "Tidak Diketahui",
         komposisi: plant.komposisi || "Tidak Diketahui",
         kegunaan: plant.kegunaan || "Tidak Diketahui",
+        dosis: plant.dosis || "Tidak Diketahui",
         caraPengolahan: plant.caraPengolahan || "Tidak Diketahui",
+        efekSamping: plant.efekSamping || "Tidak Diketahui",
         ipfsHash: plant.ipfsHash || "Tidak Diketahui",
         ratingTotal: (plant.ratingTotal || 0n).toString(),
         ratingCount: (plant.ratingCount || 0n).toString(),
@@ -383,14 +385,11 @@ async function searchPlants(req, res) {
       plantId: plantIds[index]?.toString() || "N/A",
       name: plant.name || "Tidak Diketahui",
       namaLatin: plant.namaLatin || "Tidak Diketahui",
-      bentukTanaman: plant.bentukTanaman || "Tidak Diketahui",
       komposisi: plant.komposisi || "Tidak Diketahui",
-      wilayahPenyebaran: plant.wilayahPenyebaran || "Tidak Diketahui",
-      bagianYangDigunakan: plant.bagianYangDigunakan || "Tidak Diketahui",
       kegunaan: plant.kegunaan || "Tidak Diketahui",
-      dosis: plant.dosis || "Tidak Diketahui",
+      dosis: plant.dosis || "Tidak Diketahui",  // Menambahkan dosis
       caraPengolahan: plant.caraPengolahan || "Tidak Diketahui",
-      efekSamping: plant.efekSamping || "Tidak Diketahui",
+      efekSamping: plant.efekSamping || "Tidak Diketahui",  // Menambahkan efek samping
       ipfsHash: plant.ipfsHash || "Tidak Diketahui",
       ratingTotal: (plant.ratingTotal || 0n)?.toString() || "0",
       ratingCount: (plant.ratingCount || 0n)?.toString() || "0",
@@ -407,6 +406,7 @@ async function searchPlants(req, res) {
     res.status(500).json({ success: false, message: error.message });
   }
 }
+
 
 // Function untuk mendapatkan komentar dari sebuah data tanaman herbal
 async function getComments(req, res) {
