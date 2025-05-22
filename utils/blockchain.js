@@ -15,61 +15,61 @@ const contractJSON = JSON.parse(fs.readFileSync(contractPath, "utf8"));
 // Extract ABI and Contract Address
 const contractABI = contractJSON.abi;
 const contractAddress =
-  process.env.SMART_CONTRACT_ADDRESS || contractJSON.networks["5777"]?.address;
+  process.env.SMART_CONTRACT_ADDRESS;
 
 let web3;
 let contract;
-let wallet;
+let initializationPromise = null;
 
-// Fungsi untuk menghubungkan ke blockchain berdasarkan konfigurasi di .env
+// Fungsi untuk menghubungkan ke blockchain menggunakan RPC URL dari .env
 async function connectToBlockchain() {
-  // Mengecek jaringan yang dipilih di .env
-  const blockchainNetwork = process.env.BLOCKCHAIN_NETWORK || "ganache";
-  let rpcUrl;
+  const rpcUrl = process.env.BLOCKCHAIN_RPC_URL;
 
-  if (blockchainNetwork === "ganache") {
-    rpcUrl = process.env.BLOCKCHAIN_RPC_URL || "http://0.0.0.0:7545"; // Ganache default
-  } else if (blockchainNetwork === "tea-sepolia") {
-    rpcUrl = process.env.BLOCKCHAIN_RPC_URL || "https://tea-sepolia.g.alchemy.com/public"; // Tea-Sepolia default
-  } else {
-    throw new Error(`Unsupported network: ${blockchainNetwork}`);
+  if (!rpcUrl) {
+    throw new Error("BLOCKCHAIN_RPC_URL tidak ditemukan di file .env");
   }
 
-  web3 = new Web3(rpcUrl); // Inisialisasi Web3 menggunakan URL RPC yang dipilih
+  web3 = new Web3(rpcUrl);
 
   try {
     const chainId = await web3.eth.getChainId();
-    console.log(`Connected to ${blockchainNetwork}. Chain ID: ${chainId}`);
+    console.log(`Connected to blockchain. Chain ID: ${chainId}`);
   } catch (error) {
-    console.error(`Failed to connect to ${blockchainNetwork}`, error);
+    console.error("Failed to connect to blockchain", error);
     process.exit(1);
   }
 }
 
-async function initialize(walletAddress = null) {
-  if (contract && wallet) return { contract, wallet }; // Return contract and wallet if initialized
-
-  console.log("Initializing blockchain...");
-
-  await connectToBlockchain();
-
-  if (!contractAddress) {
-    throw new Error("Contract address not found.");
+async function initialize() {
+  // Jika Promise inisialisasi sudah ada, kembalikan Promise tersebut
+  if (initializationPromise) {
+    return initializationPromise;
   }
 
-  // Jika privatekey diberikan (misalnya dari JWT), gunakan untuk inisialisasi wallet
-  if (walletAddress) {
-    wallet = web3.eth.accounts.privateKeyToAccount(walletAddress);
-  } else {
-    wallet = web3.eth.accounts.privateKeyToAccount(process.env.PRIVATE_KEY);
-  }
+  // Buat Promise inisialisasi baru dan simpan
+  initializationPromise = (async () => {
+    console.log("Memulai inisialisasi blockchain...");
 
-  contract = new web3.eth.Contract(contractABI, contractAddress, {
-    from: wallet.address,
-  });
+    try {
+      await connectToBlockchain();
 
-  console.log("Blockchain initialized successfully.");
-  return { contract, wallet };
+      // Inisialisasi kontrak
+      contract = new web3.eth.Contract(contractABI, contractAddress);
+
+      // Cek apakah kontrak berhasil terinisialisasi
+      if (!contract || !contract.methods) {
+        throw new Error("Kontrak tidak terhubung dengan benar.");
+      }
+
+      console.log("Blockchain berhasil diinisialisasi.");
+      return { contract };
+    } catch (error) {
+      initializationPromise = null;
+      throw error;
+    }
+  })();
+
+  return initializationPromise;
 }
 
 module.exports = { initialize };

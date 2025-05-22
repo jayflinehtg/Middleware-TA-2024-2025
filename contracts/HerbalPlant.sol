@@ -142,6 +142,34 @@ contract HerbalPlant {
         plantCount++;
     }
 
+    // 🔹 Mengedit tanaman herbal
+    function editPlant(
+        uint plantId,
+        string memory name,
+        string memory namaLatin,
+        string memory komposisi,
+        string memory kegunaan,
+        string memory dosis,
+        string memory caraPengolahan,
+        string memory efekSamping,
+        string memory ipfsHash
+    ) public onlyActiveUser {
+        // Pastikan yang mengedit adalah pemilik tanaman
+        require(plants[plantId].owner == msg.sender, "Hanya pemilik tanaman yang dapat mengedit");
+
+        // Memperbarui data tanaman
+        plants[plantId].name = name;
+        plants[plantId].namaLatin = namaLatin;
+        plants[plantId].komposisi = komposisi;
+        plants[plantId].kegunaan = kegunaan;
+        plants[plantId].dosis = dosis;
+        plants[plantId].caraPengolahan = caraPengolahan;
+        plants[plantId].efekSamping = efekSamping;
+        plants[plantId].ipfsHash = ipfsHash;
+
+        emit PlantAdded(plantId, name, msg.sender); // Emit event dengan ID tanaman yang sudah diubah
+    }
+
     // 🔹 Memberi rating tanaman herbal (1-5)
     function ratePlant(uint plantId, uint rating) public onlyActiveUser {
         require(plants[plantId].owner != address(0), "Tanaman tidak ditemukan");
@@ -260,42 +288,49 @@ contract HerbalPlant {
 
     // 🔹 Fungsi untuk mencari tanaman berdasarkan nama, nama latin, komposisi, atau kegunaan
     function searchPlants(
-        string memory name,
-        string memory namaLatin, 
-        string memory komposisi, 
-        string memory kegunaan
+    string memory name, 
+    string memory namaLatin, 
+    string memory komposisi, 
+    string memory kegunaan
     ) 
     public view
-    returns (uint[] memory) // Return array of plant IDs that match
+    returns (uint[] memory, Plant[] memory) // Return 2 array: IDs dan data tanaman
     {
-        uint matchCount = 0;
-        uint[] memory tempResults = new uint[](plantCount);
+    uint plantIndex = 0;
+    uint[] memory idResults = new uint[](plantCount);
+    Plant[] memory plantResults = new Plant[](plantCount);
 
-        // Count matching plants first
-        for (uint i = 0; i < plantCount; i++) {
-            Plant storage currentPlant = plants[i];
-            bool isMatch = false;
+    // Loop melalui semua tanaman yang tersimpan
+    for (uint i = 0; i < plantCount; i++) {
+        Plant storage currentPlant = plants[i];
+        bool isMatch = false;
 
-            // Jika ada salah satu yang cocok, maka isMatch = true
-            if (bytes(name).length > 0 && contains(currentPlant.name, name)) isMatch = true;
-            if (bytes(namaLatin).length > 0 && contains(currentPlant.namaLatin, namaLatin)) isMatch = true;
-            if (bytes(komposisi).length > 0 && contains(currentPlant.komposisi, komposisi)) isMatch = true;
-            if (bytes(kegunaan).length > 0 && contains(currentPlant.kegunaan, kegunaan)) isMatch = true;
+        // Jika ada salah satu yang cocok, maka isMatch = true
+        if (bytes(name).length > 0 && contains(currentPlant.name, name)) isMatch = true;
+        if (bytes(namaLatin).length > 0 && contains(currentPlant.namaLatin, namaLatin)) isMatch = true;
+        if (bytes(komposisi).length > 0 && contains(currentPlant.komposisi, komposisi)) isMatch = true;
+        if (bytes(kegunaan).length > 0 && contains(currentPlant.kegunaan, kegunaan)) isMatch = true;
 
-            // Jika memenuhi kriteria, tambahkan ke hasil
-            if (isMatch) {
-                tempResults[matchCount] = i;
-                matchCount++;
-            }
+        // Jika memenuhi kriteria, tambahkan ke hasil
+        if (isMatch) {
+            idResults[plantIndex] = i; // Simpan ID tanaman (index)
+            plantResults[plantIndex] = currentPlant; // Simpan data lengkap
+            plantIndex++;
         }
+    }
 
-        // Create correctly sized array for results
-        uint[] memory results = new uint[](matchCount);
-        for (uint i = 0; i < matchCount; i++) {
-            results[i] = tempResults[i];
-        }
+    // Buat array hasil dengan ukuran yang tepat
+    uint[] memory finalIds = new uint[](plantIndex);
+    Plant[] memory finalPlants = new Plant[](plantIndex);
 
-        return results;
+    // Salin data dari array sementara ke array final
+    for (uint i = 0; i < plantIndex; i++) {
+        finalIds[i] = idResults[i];
+        finalPlants[i] = plantResults[i];
+    }
+
+    // Kembalikan sebagai tuple (2 array terpisah)
+    return (finalIds, finalPlants);
     }
 
     // 🔹 Fungsi untuk mengecek apakah sebuah string mengandung substring tertentu (case-insensitive)

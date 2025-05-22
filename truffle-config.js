@@ -4,10 +4,9 @@ const path = require("path");
 module.exports = {
   networks: {
     development: {
-      host: "127.0.0.1",
+      host: "0.0.0.0",
       port: 7545, // Ganache default port
       network_id: "5777", // Match any network id
-      from: process.env.PUBLIC_KEY, // Set the public key from environment variable
     },
   },
   compilers: {

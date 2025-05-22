@@ -33,7 +33,16 @@ async function addPlantData(req, res) {
 
     // Menambahkan tanaman dan mendapatkan txHash serta ID tanaman yang baru
     const tx = await contract.methods
-      .addPlant(name, namaLatin, komposisi, kegunaan, dosis, caraPengolahan, efekSamping, ipfsHash)
+      .addPlant(
+        name,
+        namaLatin,
+        komposisi,
+        kegunaan,
+        dosis,
+        caraPengolahan,
+        efekSamping,
+        ipfsHash
+      )
       .send({ from: userAddress, gas: 5000000 });
 
     console.log(tx.events); // Log the events to check the emitted event
@@ -48,13 +57,82 @@ async function addPlantData(req, res) {
       success: true,
       message: "Tanaman berhasil ditambahkan",
       txHash: tx.transactionHash,
-      plantId: plantIdString, // Return the plantId as string
+      plantId: plantIdString,
     });
 
     console.timeEnd("Add Plant Time");
     console.log(`✅ Plant added with transaction hash: ${tx.transactionHash}`);
   } catch (error) {
     console.error("❌ Error in addPlantData:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+// Fungsi untuk mengedit data tanaman herbal
+async function editPlant(req, res) {
+  try {
+    console.time("Edit Plant Time");
+    const userAddress = req.user.publicKey;
+    const {
+      plantId,
+      name,
+      namaLatin,
+      komposisi,
+      kegunaan,
+      dosis,
+      caraPengolahan,
+      efekSamping,
+      ipfsHash,
+    } = req.body;
+
+    // Pastikan pengguna sudah login
+    const loggedIn = await isUserLoggedIn(userAddress);
+    if (!loggedIn) {
+      return res.status(401).json({
+        success: false,
+        message: "Anda harus login untuk mengedit tanaman",
+      });
+    }
+
+    // Inisialisasi kontrak
+    const { contract } = await initialize(userAddress);
+
+    // Cek apakah tanaman yang ingin diedit milik pengguna
+    const plant = await contract.methods.getPlant(plantId).call();
+    if (plant.owner.toLowerCase() !== userAddress.toLowerCase()) {
+      return res.status(403).json({
+        success: false,
+        message: "Anda tidak memiliki hak untuk mengedit tanaman ini",
+      });
+    }
+
+    // Kirim transaksi untuk mengedit tanaman
+    const tx = await contract.methods
+      .editPlant(
+        plantId,
+        name,
+        namaLatin,
+        komposisi,
+        kegunaan,
+        dosis,
+        caraPengolahan,
+        efekSamping,
+        ipfsHash
+      )
+      .send({ from: userAddress, gas: 5000000 });
+
+    res.json({
+      success: true,
+      message: "Tanaman berhasil diedit",
+      txHash: tx.transactionHash,
+      plantId: plantId.toString(), // Mengonversi BigInt ke string
+    });
+    console.timeEnd("Edit Plant Time");
+    console.log(
+      `✅ Berhasil mengedit tanaman dengan TX Hash: ${tx.transactionHash}`
+    );
+  } catch (error) {
+    console.error("❌ Error in editPlant:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 }
@@ -111,7 +189,6 @@ async function getPlant(req, res) {
     res.status(500).json({ success: false, message: error.message });
   }
 }
-
 
 async function ratePlant(req, res) {
   try {
@@ -387,9 +464,9 @@ async function searchPlants(req, res) {
       namaLatin: plant.namaLatin || "Tidak Diketahui",
       komposisi: plant.komposisi || "Tidak Diketahui",
       kegunaan: plant.kegunaan || "Tidak Diketahui",
-      dosis: plant.dosis || "Tidak Diketahui",  // Menambahkan dosis
+      dosis: plant.dosis || "Tidak Diketahui", // Menambahkan dosis
       caraPengolahan: plant.caraPengolahan || "Tidak Diketahui",
-      efekSamping: plant.efekSamping || "Tidak Diketahui",  // Menambahkan efek samping
+      efekSamping: plant.efekSamping || "Tidak Diketahui", // Menambahkan efek samping
       ipfsHash: plant.ipfsHash || "Tidak Diketahui",
       ratingTotal: (plant.ratingTotal || 0n)?.toString() || "0",
       ratingCount: (plant.ratingCount || 0n)?.toString() || "0",
@@ -406,7 +483,6 @@ async function searchPlants(req, res) {
     res.status(500).json({ success: false, message: error.message });
   }
 }
-
 
 // Function untuk mendapatkan komentar dari sebuah data tanaman herbal
 async function getComments(req, res) {
@@ -454,6 +530,7 @@ async function getComments(req, res) {
 
 module.exports = {
   addPlantData,
+  editPlant,
   ratePlant,
   getAverageRating,
   getPlantRatings,

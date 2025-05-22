@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   addPlantData,
+  editPlant,
   ratePlant,
   likePlant,
   commentPlant,
@@ -20,6 +21,9 @@ const router = express.Router();
 
 // 🔹 Rute untuk menambahkan tanaman (butuh autentikasi)
 router.post("/add", verifyToken, addPlantData);
+
+// 🔹 Rute untuk mengedit data tanaman herbal (butuh autentikasi)
+router.put("/edit/:plantId", verifyToken, editPlant);
 
 // 🔹 Rute untuk mencari tanaman berdasarkan parameter
 router.get("/search", searchPlants);
@@ -42,7 +46,7 @@ router.get("/:plantId", optionalAuth, getPlant);
 // 🔹 Rute untuk mendapatkan rating tanaman
 router.get("/:plantId/ratings", getPlantRatings);
 
-// 🔹 Rute untuk mengambil komentar tanaman (butuh autentikasi)
+// 🔹 Rute untuk mengambil komentar tanaman
 router.get("/:plantId/comments", getComments);
 
 // 🔹 Rute untuk mendapatkan rata-rata rating tanaman berdasarkan plantId
