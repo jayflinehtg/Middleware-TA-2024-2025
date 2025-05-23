@@ -43,27 +43,27 @@ async function registerUser(walletAddress, fullName, password) {
       // Ini adalah error dari web3.js atau library terkait
       // Contoh: "ContractExecutionError: Error happened while trying to execute a function inside a smart contract"
       // Kita perlu mencari pesan "revert" di dalamnya
-      
+
       // Cari pesan dari `revert` statement smart contract
       const revertMatch = error.message.match(/revert (.*)/i);
       if (revertMatch && revertMatch[1]) {
         errorMessage = `Pendaftaran gagal: ${revertMatch[1]}`;
-      } else if (error.cause && typeof error.cause.message === 'string') {
+      } else if (error.cause && typeof error.cause.message === "string") {
         // Coba cek properti 'cause' jika ada
         const nestedRevertMatch = error.cause.message.match(/revert (.*)/i);
         if (nestedRevertMatch && nestedRevertMatch[1]) {
-            errorMessage = `Pendaftaran gagal: ${nestedRevertMatch[1]}`;
+          errorMessage = `Pendaftaran gagal: ${nestedRevertMatch[1]}`;
         } else {
-            // Fallback ke pesan dari 'cause' jika tidak ada 'revert'
-            errorMessage = `Pendaftaran gagal: ${error.cause.message}`;
+          // Fallback ke pesan dari 'cause' jika tidak ada 'revert'
+          errorMessage = `Pendaftaran gagal: ${error.cause.message}`;
         }
       } else {
         // Fallback jika struktur error tidak sesuai harapan tapi ada error.message
         errorMessage = `Pendaftaran gagal: ${error.message}`;
       }
-    } else if (typeof error === 'string') {
-        // Jika error adalah string sederhana
-        errorMessage = `Pendaftaran gagal: ${error}`;
+    } else if (typeof error === "string") {
+      // Jika error adalah string sederhana
+      errorMessage = `Pendaftaran gagal: ${error}`;
     }
 
     throw new Error(errorMessage); // Lempar error dengan pesan yang lebih spesifik
@@ -91,8 +91,7 @@ async function loginUser(walletAddress, password) {
     // Buat token JWT yang berlaku selama 3 jam
     const token = jwt.sign(
       { publicKey: walletAddress },
-      process.env.JWT_SECRET,
-      { expiresIn: "3h" }
+      process.env.JWT_SECRET
     );
 
     console.timeEnd("Login Time");
