@@ -172,25 +172,27 @@ contract HerbalPlant {
 
     // 🔹 Memberi rating tanaman herbal (1-5)
     function ratePlant(uint plantId, uint rating) public onlyActiveUser {
-        require(plants[plantId].owner != address(0), "Tanaman tidak ditemukan");
-        require(rating >= 1 && rating <= 5, "Rating harus antara 1 hingga 5");
+    require(plants[plantId].owner != address(0), "Tanaman tidak ditemukan");
+    require(rating >= 1 && rating <= 5, "Rating harus antara 1 hingga 5");
 
-        uint previousRating = plantRatings[plantId][msg.sender];
-        if (previousRating != 0) {
-            // Mengurangi rating sebelumnya
-            plants[plantId].ratingTotal -= previousRating;
-            plants[plantId].ratingCount--; // Mengurangi jumlah rating
-        }
-
-        // Menambahkan rating baru
-        plantRatings[plantId][msg.sender] = rating;
+    uint previousRating = plantRatings[plantId][msg.sender];
+    
+    // Cek apakah ini rating pertama kali dari pengguna atau pembaruan rating
+    if (previousRating == 0) {
+        // --- rating PERTAMA KALI dari pengguna ---
         plants[plantId].ratingTotal += rating;
-        plants[plantId].ratingCount++; // Menambah jumlah rating
-
-        // Menyimpan user yang memberi rating
+        plants[plantId].ratingCount++;
         plantRatingUsers[plantId].push(msg.sender);
+    } else {
+        // --- Pengguna MEMPERBARUI ratingnya yang sudah ada ---
+        plants[plantId].ratingTotal -= previousRating;
+        plants[plantId].ratingTotal += rating;
+    }
 
-        emit PlantRated(plantId, msg.sender, rating);
+    // Selalu update rating individu pengguna
+    plantRatings[plantId][msg.sender] = rating;
+
+    emit PlantRated(plantId, msg.sender, rating);
     }
 
     // 🔹 Fungsi untuk mendapatkan rata-rata rating dari sebuah tanaman herbal
