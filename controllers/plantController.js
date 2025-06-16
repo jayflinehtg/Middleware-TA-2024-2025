@@ -73,8 +73,10 @@ async function editPlant(req, res) {
   try {
     console.time("Edit Plant Time");
     const userAddress = req.user.publicKey;
+
+    const plantIdFromParams = req.params.plantId;
+
     const {
-      plantId,
       name,
       namaLatin,
       komposisi,
@@ -84,6 +86,11 @@ async function editPlant(req, res) {
       efekSamping,
       ipfsHash,
     } = req.body;
+
+    const plantId = parseInt(plantIdFromParams);
+
+    console.log("Editing plant ID:", plantId);
+    console.log("User address:", userAddress);
 
     // Pastikan pengguna sudah login
     const loggedIn = await isUserLoggedIn(userAddress);
@@ -125,7 +132,7 @@ async function editPlant(req, res) {
       success: true,
       message: "Tanaman berhasil diedit",
       txHash: tx.transactionHash,
-      plantId: plantId.toString(), // Mengonversi BigInt ke string
+      plantId: plantId.toString(),
     });
     console.timeEnd("Edit Plant Time");
     console.log(
