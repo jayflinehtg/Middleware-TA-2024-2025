@@ -53,6 +53,10 @@ async function addPlantData(req, res) {
     // Ensure the plantId is a string, converting if necessary
     const plantIdString = plantId.toString();
 
+    await contract.methods
+      .addPlantRecord(tx.transactionHash, plantIdString, userAddress)
+      .send({ from: userAddress, gas: 3000000 });
+
     res.json({
       success: true,
       message: "Tanaman berhasil ditambahkan",
@@ -127,6 +131,11 @@ async function editPlant(req, res) {
         ipfsHash
       )
       .send({ from: userAddress, gas: 5000000 });
+
+    // Simpan record transaksi edit ke smart contract
+    await contract.methods
+      .addPlantRecord(tx.transactionHash, plantId.toString(), userAddress)
+      .send({ from: userAddress, gas: 3000000 });
 
     res.json({
       success: true,
@@ -256,16 +265,24 @@ async function getAverageRating(req, res) {
     // Mengambil total rating dan jumlah rating yang diberikan pada tanaman
     const plant = await contract.methods.getPlant(plantId).call();
 
-    // Menghitung rata-rata rating
-    const totalRating = plant.ratingTotal; // Total rating yang diterima
-    const ratingCount = plant.ratingCount; // Jumlah pengguna yang memberi rating
+    // Menghitung rata-rata rating dan error handling
+    const totalRating = plant.ratingTotal ? Number(plant.ratingTotal) : 0;
+    const ratingCount = plant.ratingCount ? Number(plant.ratingCount) : 0;
+
+    // Validasi data
+    if (isNaN(totalRating) || isNaN(ratingCount)) {
+      throw new Error("Invalid rating data from smart contract");
+    }
 
     // Jika tidak ada rating yang diberikan, rata-rata adalah 0
     const averageRating = ratingCount > 0 ? totalRating / ratingCount : 0;
 
+    // Pastikan rating dalam range yang valid (0-5)
+    const validRating = Math.max(0, Math.min(5, averageRating));
+
     res.json({
       success: true,
-      averageRating: averageRating.toString(), // Mengonversi rata-rata rating menjadi string
+      averageRating: Math.round(validRating * 10) / 10,
     });
     console.timeEnd("Get Average Rating Time");
   } catch (error) {
@@ -535,6 +552,187 @@ async function getComments(req, res) {
   }
 }
 
+// Fungsi untuk mengambil record transaksi berdasarkan recordId
+async function getPlantRecord(req, res) {
+  try {
+    console.time("Get Plant Record Time");
+    const { recordId } = req.params;
+
+    const { contract } = await initialize();
+
+    // Mengambil data record dari smart contract
+    const record = await contract.methods.getPlantRecord(recordId).call();
+
+    res.json({
+      success: true,
+      record: {
+        ganacheTxHash: record.ganacheTxHash,
+        plantId: record.plantId.toString(),
+        userAddress: record.userAddress,
+        timestamp: record.timestamp.toString(),
+      },
+    });
+
+    console.timeEnd("Get Plant Record Time");
+  } catch (error) {
+    console.error("❌ Error in getPlantRecord:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+// Fungsi untuk mendapatkan semua plant records
+async function getAllPlantRecord(req, res) {
+  try {
+    console.time("Get All Plant Records Time");
+
+    const { contract } = await initialize();
+    const totalRecords = await contract.methods.recordCount().call();
+    const total = parseInt(totalRecords.toString());
+
+    const records = [];
+    for (let i = 0; i < total; i++) {
+      const record = await contract.methods.getPlantRecord(i).call();
+      records.push({
+        recordId: i.toString(),
+        ganacheTxHash: record.ganacheTxHash,
+        plantId: record.plantId.toString(),
+        userAddress: record.userAddress,
+        timestamp: record.timestamp.toString(),
+      });
+    }
+
+    res.json({
+      success: true,
+      totalRecords: total,
+      records: records,
+    });
+
+    console.timeEnd("Get All Plant Records Time");
+  } catch (error) {
+    console.error("❌ Error in getAllPlantRecord:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+// Fungsi untuk mendapatkan transaction history berdasarkan plantId dengan pagination
+async function getPlantTransactionHistory(req, res) {
+  try {
+    console.time("Get Plant Transaction History Time");
+    const { plantId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const { contract } = await initialize();
+    const totalRecords = await contract.methods.recordCount().call();
+    const total = parseInt(totalRecords.toString());
+
+    // Filter records berdasarkan plantId
+    const plantRecords = [];
+
+    for (let i = 0; i < total; i++) {
+      const record = await contract.methods.getPlantRecord(i).call();
+
+      // Filter hanya record yang sesuai dengan plantId
+      if (record.plantId.toString() === plantId.toString()) {
+        plantRecords.push({
+          recordId: i.toString(),
+          ganacheTxHash: record.ganacheTxHash,
+          plantId: record.plantId.toString(),
+          userAddress: record.userAddress,
+          timestamp: record.timestamp.toString(),
+        });
+      }
+    }
+
+    // Sort berdasarkan timestamp (terbaru dulu)
+    plantRecords.sort((a, b) => parseInt(b.timestamp) - parseInt(a.timestamp));
+
+    // pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedRecords = plantRecords.slice(startIndex, endIndex);
+
+    // Tentukan jenis transaksi berdasarkan urutan
+    const recordsWithType = paginatedRecords.map((record) => {
+      const allRecordsForPlant = plantRecords.filter(
+        (r) => r.plantId === record.plantId
+      );
+      const sortedByTimestamp = allRecordsForPlant.sort(
+        (a, b) => parseInt(a.timestamp) - parseInt(b.timestamp)
+      );
+      const recordIndex = sortedByTimestamp.findIndex(
+        (r) => r.recordId === record.recordId
+      );
+
+      return {
+        ...record,
+        transactionType: recordIndex === 0 ? "Add Plant" : "Edit Plant",
+        icon: recordIndex === 0 ? "🌱" : "✏️",
+      };
+    });
+
+    // Format timestamp menjadi readable format
+    const formattedRecords = recordsWithType.map((record) => {
+      const date = new Date(parseInt(record.timestamp) * 1000);
+      const formattedDate =
+        date.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }) +
+        ", " +
+        date.toLocaleTimeString("en-GB", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        });
+
+      return {
+        ...record,
+        formattedTimestamp: formattedDate,
+      };
+    });
+
+    res.json({
+      success: true,
+      plantId: plantId,
+      data: formattedRecords,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(plantRecords.length / limit),
+        totalRecords: plantRecords.length,
+        hasNextPage: endIndex < plantRecords.length,
+        hasPreviousPage: page > 1,
+      },
+    });
+
+    console.timeEnd("Get Plant Transaction History Time");
+  } catch (error) {
+    console.error("❌ Error in getPlantTransactionHistory:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
+// Fungsi untuk mendapatkan total record count
+async function getRecordCount(req, res) {
+  try {
+    console.time("Get Record Count Time");
+    const { contract } = await initialize();
+
+    const count = await contract.methods.recordCount().call();
+
+    res.json({
+      success: true,
+      recordCount: count.toString(),
+    });
+
+    console.timeEnd("Get Record Count Time");
+  } catch (error) {
+    console.error("❌ Error in getRecordCount:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+}
+
 module.exports = {
   addPlantData,
   editPlant,
@@ -547,4 +745,8 @@ module.exports = {
   searchPlants,
   getComments,
   getAllPlants,
+  getPlantRecord,
+  getAllPlantRecord,
+  getPlantTransactionHistory,
+  getRecordCount,
 };
